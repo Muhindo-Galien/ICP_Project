@@ -3,11 +3,11 @@ import { $query, $update, Record, StableBTreeMap, Vec, match, Result, nat64, ic,
 
 //define a Record to store the all the details about the task
 type Task = Record <{
-    title : string;
-    description : string;
-    assignedTo : string;
-    isDone: boolean;
-    startTIme : nat64;
+    title : string; //title of the task
+    description : string; //a brief description of the task
+    assignedTo : string; // the team member to whom it is assigned
+    isDone: boolean; // to track whether the task has been completed 
+    startTIme : nat64; //the time at which the task started
     deadline: nat8; //deadline in hours
 }>
 
@@ -36,7 +36,7 @@ const taskStore = new StableBTreeMap<nat8, Task>(1,100,1000);
 //add new team member by the admin
 $update;
 export function addMember( principalID : string) : Result<nat8, string>{
-    if(ic.caller().toString() != AdminPrincipal){
+    if(ic.caller().toString() !== AdminPrincipal){
         return Result.Err<nat8,string>("You are not authorised to add new members");
     }
     memberCount = (memberCount + 1);
@@ -48,7 +48,7 @@ export function addMember( principalID : string) : Result<nat8, string>{
 //delete team member by the admin
 $update;
 export function deleteMember( id : nat8) : Result<string, string>{
-    if(ic.caller().toString() != AdminPrincipal){
+    if(ic.caller().toString() !== AdminPrincipal){
         return Result.Err<string,string>("You are not authorised to delete members");
     }
     
@@ -72,7 +72,7 @@ export function getMember(id : nat8) : Result<Principal,string>{
 //update the principal of the team member by the admin
 $update;
 export function updateMember(id : nat8, _newName : string) : Result<nat8,string>{
-    if(ic.caller().toString() != AdminPrincipal){
+    if(ic.caller().toString() !== AdminPrincipal){
         return Result.Err<nat8,string>("You are not authorised to update members");
     }
     return match(memberStore.get(id),{
@@ -100,7 +100,7 @@ export function getAllMembers() : Result<Vec<Principal>, string>{
 //get all tasks stored in the contract
 $query;
 export function getAllTasks() : Result<Vec<Task>,string>{
-    if((taskStore.values()).length == 0){
+    if((taskStore.values()).length === 0){
         return Result.Err<Vec<Task>,string>("No tasks yet");
     };
     return Result.Ok<Vec<Task>,string>(taskStore.values());
@@ -118,7 +118,7 @@ export function getTask(id : nat8) : Result<Task,string>{
 //delete task by the admin using its id
 $update;
 export function deleteTask(id : nat8) : Result<string,string>{
-    if(ic.caller().toString() != AdminPrincipal){
+    if(ic.caller().toString() !== AdminPrincipal){
         return Result.Err<string,string>("You are not authorised to update members");
     }
     return match(taskStore.remove(id),{
@@ -172,13 +172,13 @@ export function searchTasks(query: string): Result<Vec<Task>, string> {
 //add a task by the admin and assign it to the team member
 $update;
 export function addTask( payload: TaskLoad) : Result<nat8,string>{
-    if(!(ic.caller().toString() == AdminPrincipal)){
+    if(!(ic.caller().toString() === AdminPrincipal)){
         return Result.Err<nat8,string>("Only admins can add tasks");
     }
     if(!isMember(payload.assignedTo)){
         return Result.Err<nat8,string>("Assigned Member does not exist");
     };
-    if( payload.title.length == 0 || payload.description.length == 0 || payload.deadline < 1){
+    if( payload.title.length === 0 || payload.description.length === 0 || payload.deadline < 1){
         return Result.Err<nat8,string>("Malformed values");
     }
 
