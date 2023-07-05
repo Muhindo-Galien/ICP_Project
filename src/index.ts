@@ -22,7 +22,7 @@ type TaskLoad = Record <{
 const AdminPrincipal : string = "2vxsx-fae";
 
 
-//store family members
+//store team members
 let memberCount : nat8 = 0;
 const memberStore = new StableBTreeMap<nat8, Principal>(0,100,1000);
 
@@ -31,7 +31,7 @@ let taskCount : nat8 = 0;
 const taskStore = new StableBTreeMap<nat8, Task>(1,100,1000);
 
 
-//add new family member
+//add new team member
 $update;
 export function addMember( principalID : string) : Result<nat8, string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -43,7 +43,7 @@ export function addMember( principalID : string) : Result<nat8, string>{
 }
 
 
-//delete family member
+//delete team member
 $update;
 export function deleteMember( id : nat8) : Result<string, string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -57,7 +57,7 @@ export function deleteMember( id : nat8) : Result<string, string>{
 }
 
 
-//get family member by id
+//get team member by id
 $query;
 export function getMember(id : nat8) : Result<Principal,string>{
 
@@ -68,7 +68,7 @@ export function getMember(id : nat8) : Result<Principal,string>{
 }
 
 
-//update the principal of the family member
+//update the principal of the team member
 $update;
 export function updateMember(id : nat8, _newName : string) : Result<nat8,string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -87,7 +87,7 @@ export function updateMember(id : nat8, _newName : string) : Result<nat8,string>
     });
 }
 
-//get all family members
+//get all team members
 $query;
 export function getAllMembers() : Result<Vec<Principal>, string>{
     if((memberStore.values()).length == 0){
@@ -126,7 +126,7 @@ export function deleteTask(id : nat8) : Result<string,string>{
     });
 };
 
-//is member of the family
+//is member of the team
 $query;
 export function isMember( p : string) : boolean{
     const ismember = memberStore.values().filter((member) => member.toString()  === p);
@@ -168,7 +168,7 @@ export function searchTasks(query: string): Result<Vec<Task>, string> {
 }
 
 
-//add a task for the family member
+//add a task for the team member
 $update;
 export function addTask( payload: TaskLoad) : Result<nat8,string>{
     if(!(ic.caller().toString() == AdminPrincipal)){
@@ -200,7 +200,7 @@ export function completeTask(id : nat8) : Result<string,string>{
         None: ()=>{ return Result.Err<string,string>("Task not found")},
         Some : (task) =>{
             if(task.assignedTo !== ic.caller().toString()){
-                return Result.Err<string,string>("Not the task owner")
+                return Result.Err<string,string>("You were not assigned to this task")
             }
             const taskDeadline = task.startTIme + BigInt(hoursToNanoseconds(task.deadline));
             if(taskDeadline < ic.time()){
