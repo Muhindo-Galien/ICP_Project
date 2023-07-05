@@ -16,6 +16,8 @@ src/declarations/
 # frontend code
 node_modules/
 dist/
+HACK_BECAUSE_OF_ALLOW_JS/
+
 
 # environment variables
 .env

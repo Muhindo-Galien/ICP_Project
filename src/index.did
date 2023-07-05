@@ -1,0 +1,35 @@
+type Task = record {
+  startTIme : nat64;
+  title : text;
+  assignedTo : text;
+  description : text;
+  isDone : bool;
+  deadline : nat8;
+};
+type TaskLoad = record {
+  title : text;
+  assignedTo : text;
+  description : text;
+  deadline : nat8;
+};
+type _AzleResult = variant { Ok : nat8; Err : text };
+type _AzleResult_1 = variant { Ok : text; Err : text };
+type _AzleResult_2 = variant { Ok : vec principal; Err : text };
+type _AzleResult_3 = variant { Ok : vec Task; Err : text };
+type _AzleResult_4 = variant { Ok : principal; Err : text };
+type _AzleResult_5 = variant { Ok : Task; Err : text };
+service : () -> {
+  addMember : (text) -> (_AzleResult);
+  addTask : (TaskLoad) -> (_AzleResult);
+  completeTask : (nat8) -> (_AzleResult_1);
+  deleteMember : (nat8) -> (_AzleResult_1);
+  deleteTask : (nat8) -> (_AzleResult_1);
+  getAllMembers : () -> (_AzleResult_2) query;
+  getAllTasks : () -> (_AzleResult_3) query;
+  getMember : (nat8) -> (_AzleResult_4) query;
+  getTask : (nat8) -> (_AzleResult_5) query;
+  isMember : (text) -> (bool) query;
+  personalTasks : (text, bool) -> (vec Task) query;
+  searchTasks : (text) -> (_AzleResult_3) query;
+  updateMember : (nat8, text) -> (_AzleResult);
+}
