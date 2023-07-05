@@ -1,7 +1,7 @@
-
+//import the necessary methods from azle
 import { $query, $update, Record, StableBTreeMap, Vec, match, Result, nat64, ic, Opt, nat, nat8,Principal} from 'azle';
 
-
+//define a Record to store the all the details about the task
 type Task = Record <{
     title : string;
     description : string;
@@ -11,6 +11,7 @@ type Task = Record <{
     deadline: nat8; //deadline in hours
 }>
 
+//define a Record to store the user input for the task
 type TaskLoad = Record <{
     title : string;
     description: string;
@@ -18,7 +19,8 @@ type TaskLoad = Record <{
     deadline: nat8;
 }>
 
-//replace this with your principal from the termianl or the Internet Isentity
+//replace this with your principal from the terminal or the Internet Identity
+//admin principal ID
 const AdminPrincipal : string = "2vxsx-fae";
 
 
@@ -31,7 +33,7 @@ let taskCount : nat8 = 0;
 const taskStore = new StableBTreeMap<nat8, Task>(1,100,1000);
 
 
-//add new team member
+//add new team member by the admin
 $update;
 export function addMember( principalID : string) : Result<nat8, string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -43,7 +45,7 @@ export function addMember( principalID : string) : Result<nat8, string>{
 }
 
 
-//delete team member
+//delete team member by the admin
 $update;
 export function deleteMember( id : nat8) : Result<string, string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -60,7 +62,6 @@ export function deleteMember( id : nat8) : Result<string, string>{
 //get team member by id
 $query;
 export function getMember(id : nat8) : Result<Principal,string>{
-
     return match(memberStore.get(id),{
         Some: (member)=>{ return Result.Ok<Principal,string>(member)},
         None: () =>{ return Result.Err<Principal,string>("Member does not exist")}
@@ -68,7 +69,7 @@ export function getMember(id : nat8) : Result<Principal,string>{
 }
 
 
-//update the principal of the team member
+//update the principal of the team member by the admin
 $update;
 export function updateMember(id : nat8, _newName : string) : Result<nat8,string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -96,7 +97,7 @@ export function getAllMembers() : Result<Vec<Principal>, string>{
     return Result.Ok<Vec<Principal>,string>(memberStore.values());
 }
 
-//get all tasks
+//get all tasks stored in the contract
 $query;
 export function getAllTasks() : Result<Vec<Task>,string>{
     if((taskStore.values()).length == 0){
@@ -105,7 +106,7 @@ export function getAllTasks() : Result<Vec<Task>,string>{
     return Result.Ok<Vec<Task>,string>(taskStore.values());
 }
 
-///get specific task
+///get specific task by its id
 $query;
 export function getTask(id : nat8) : Result<Task,string>{
     return match(taskStore.get(id),{
@@ -114,7 +115,7 @@ export function getTask(id : nat8) : Result<Task,string>{
     });
 };
 
-//delete task
+//delete task by the admin using its id
 $update;
 export function deleteTask(id : nat8) : Result<string,string>{
     if(ic.caller().toString() != AdminPrincipal){
@@ -126,7 +127,7 @@ export function deleteTask(id : nat8) : Result<string,string>{
     });
 };
 
-//is member of the team
+//check if the principal ID is among the team  members
 $query;
 export function isMember( p : string) : boolean{
     const ismember = memberStore.values().filter((member) => member.toString()  === p);
@@ -137,14 +138,14 @@ export function isMember( p : string) : boolean{
 };
 
 
-//return the tasks for a specific member depending on the condition
+//return the tasks for a specific team member depending on the condition(isDone)
 $query;
 export function personalTasks( p : string, condition:boolean) : Vec<Task>{
     const myTasks = taskStore.values().filter((task) => ((task.assignedTo  === p) && task.isDone === condition));
     return myTasks;
 };
 
-//calculate the hours to nanoseconds
+//calculate and convert the hours to nanoseconds
 const hoursToNanoseconds = (hours: nat8): number => {
     const minutes = hours * 60;
     const seconds = minutes * 60;
@@ -168,7 +169,7 @@ export function searchTasks(query: string): Result<Vec<Task>, string> {
 }
 
 
-//add a task for the team member
+//add a task by the admin and assign it to the team member
 $update;
 export function addTask( payload: TaskLoad) : Result<nat8,string>{
     if(!(ic.caller().toString() == AdminPrincipal)){
@@ -193,7 +194,6 @@ export function addTask( payload: TaskLoad) : Result<nat8,string>{
 };
 
 //complete the task by the member
-
 $update;
 export function completeTask(id : nat8) : Result<string,string>{
     return match(taskStore.get(id),{
