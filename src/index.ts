@@ -1,5 +1,5 @@
 //import the necessary methods from azle
-import { $query, $update, Record, StableBTreeMap, Vec, match, Result, nat64, ic, Opt, nat, nat8,Principal} from 'azle';
+import {$init, $query, $update, Record, StableBTreeMap, Vec, match, Result, nat64, ic, Opt, nat, nat8,Principal} from 'azle';
 
 //define a Record to store the all the details about the task
 type Task = Record <{
@@ -20,8 +20,8 @@ type TaskLoad = Record <{
 }>
 
 //replace this with your principal from the terminal or the Internet Identity
-//admin principal ID
-const AdminPrincipal : string = "2vxsx-fae";
+//admin principal ID in a string format
+var AdminPrincipal : string = "2vxsx-fae";
 
 
 //store team members
@@ -32,7 +32,17 @@ const memberStore = new StableBTreeMap<nat8, Principal>(0,100,1000);
 let taskCount : nat8 = 0;
 const taskStore = new StableBTreeMap<nat8, Task>(1,100,1000);
 
+//set the contract deployer as the admin
+$init;
+export function init (admin : string) : void{
+    AdminPrincipal = admin;
+};
 
+//return the one that deployed the contract
+$query;
+export function contractOwner() : Principal{
+    return Principal.fromText(AdminPrincipal)
+}
 //add new team member by the admin
 $update;
 export function addMember( principalID : string) : Result<nat8, string>{
